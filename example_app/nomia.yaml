@@ -1,0 +1,5 @@
+rules:
+  - id: commission.default
+    title: Comissão padrão
+    description: Comissão deve permanecer em 20%.
+    version: 1
