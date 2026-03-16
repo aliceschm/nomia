@@ -1,10 +1,16 @@
+from pathlib import Path
+
+from nomia.config import load_config
 from nomia.discovery import discover_functions
 from nomia.fingerprint import fingerprint_function
 from nomia.state import save_state
 
 
-def validate(project_root: str = "example_app") -> dict:
-    discovered = discover_functions(project_root)
+def validate(config_path: str | None = None) -> dict:
+    config = load_config(config_path)
+    project_root: Path = config["_project_root"]
+
+    discovered = discover_functions(config_path)
 
     state = {"rules": {}}
 
@@ -17,5 +23,5 @@ def validate(project_root: str = "example_app") -> dict:
             "code_hash": code_hash
         }
 
-    save_state(state)
+    save_state(project_root, state)
     return state

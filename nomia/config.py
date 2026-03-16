@@ -1,12 +1,51 @@
 from pathlib import Path
+
 import yaml
 
 
-def load_config(config_path: str = "nomia.yaml") -> dict:
-    path = Path(config_path)
+DEFAULT_CONFIG_NAMES = ("nomia.yaml", "nomia.yml")
 
-    if not path.exists():
-        raise FileNotFoundError(f"Configuration file not found: {path}")
+
+def resolve_config_path(config_path: str | None = None) -> Path:
+    if config_path:
+        path = Path(config_path).expanduser().resolve()
+
+        if not path.exists():
+            raise FileNotFoundError(f"Configuration file not found: {path}")
+
+        return path
+
+    current = Path.cwd().resolve()
+
+    for directory in (current, *current.parents):
+        for name in DEFAULT_CONFIG_NAMES:
+            candidate = directory / name
+            if candidate.exists():
+                return candidate
+
+    expected = " or ".join(DEFAULT_CONFIG_NAMES)
+    raise FileNotFoundError(
+        f"No configuration file found. Expected {expected} in the current directory or its parents."
+    )
+
+
+def load_config(config_path: str | None = None) -> dict:
+    path = resolve_config_path(config_path)
 
     with path.open("r", encoding="utf-8") as file:
-        return yaml.safe_load(file) or {}
+        data = yaml.safe_load(file) or {}
+
+    if not isinstance(data, dict):
+        raise ValueError("Configuration file must contain a YAML object at the root.")
+
+    sources = data.get("sources")
+    if not sources:
+        raise ValueError("Configuration file must define at least one source in 'sources'.")
+
+    if not isinstance(sources, list) or not all(isinstance(source, str) for source in sources):
+        raise ValueError("'sources' must be a list of strings.")
+
+    data["_config_path"] = path
+    data["_project_root"] = path.parent
+
+    return data

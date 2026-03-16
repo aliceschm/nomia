@@ -1,3 +1,6 @@
+sources:
+  - example_app
+
 rules:
   - id: commission.default
     title: Comissão padrão

@@ -1,11 +1,17 @@
+from pathlib import Path
+
+from nomia.config import load_config
 from nomia.discovery import discover_functions
 from nomia.fingerprint import fingerprint_function
 from nomia.state import load_state
 
 
-def check(project_root: str = "example_app") -> list[dict]:
-    discovered = discover_functions(project_root)
-    saved_state = load_state()
+def check(config_path: str | None = None) -> list[dict]:
+    config = load_config(config_path)
+    project_root: Path = config["_project_root"]
+
+    discovered = discover_functions(config_path)
+    saved_state = load_state(project_root)
 
     issues: list[dict] = []
 
