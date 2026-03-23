@@ -1,5 +1,4 @@
 import typer
-from pathlib import Path
 
 from nomia.services.checker import check
 from nomia.services.validator import validate
@@ -16,21 +15,34 @@ def main(
         "-c",
         help="Path to Nomia config file.",
     ),
+    verbose: bool = typer.Option(
+        False,
+        "--verbose",
+        "-v",
+        help="Show detailed discovery and import output.",
+    ),
 ) -> None:
-    ctx.obj = {"config": config}
+    ctx.obj = {
+        "config_path": config,
+        "verbose": verbose,
+    }
 
 
 @app.command(name="validate")
 def validate_cmd(ctx: typer.Context) -> None:
-    config_path = ctx.obj.get("config")
-    state = validate(config_path)
+    state = validate(
+        config_path=ctx.obj["config_path"],
+        verbose=ctx.obj["verbose"],
+    )
     typer.echo(f"Validation snapshot created. Rules tracked: {len(state['rules'])}")
 
 
 @app.command(name="check")
 def check_cmd(ctx: typer.Context) -> None:
-    config_path = ctx.obj.get("config")
-    issues = check(config_path)
+    issues = check(
+        config_path=ctx.obj["config_path"],
+        verbose=ctx.obj["verbose"],
+    )
 
     if not issues:
         typer.echo("Nomia is up to date.")

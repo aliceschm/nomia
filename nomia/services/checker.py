@@ -6,11 +6,11 @@ from nomia.fingerprint import fingerprint_function
 from nomia.state import load_state
 
 
-def check(config_path: str | None = None) -> list[dict]:
+def check(config_path: str | None = None, verbose: bool = False) -> list[dict]:
     config = load_config(config_path)
     project_root: Path = config["_project_root"]
 
-    discovered = discover_functions(config_path)
+    discovered = discover_functions(config_path=config_path, verbose=verbose)
     saved_state = load_state(project_root)
 
     issues: list[dict] = []

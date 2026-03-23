@@ -6,3 +6,7 @@ rules:
     title: Comissão padrão
     description: Comissão deve permanecer em 20%.
     version: 1
+
+  - id: comission.bonus
+    title: Bônus especial
+    description: Bônus a ser aplicado em cargos x

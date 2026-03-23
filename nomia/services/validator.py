@@ -6,11 +6,11 @@ from nomia.fingerprint import fingerprint_function
 from nomia.state import save_state
 
 
-def validate(config_path: str | None = None) -> dict:
+def validate(config_path: str | None = None, verbose: bool = False) -> dict:
     config = load_config(config_path)
     project_root: Path = config["_project_root"]
 
-    discovered = discover_functions(config_path)
+    discovered = discover_functions(config_path=config_path, verbose=verbose)
 
     state = {"rules": {}}
 

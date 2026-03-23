@@ -1,3 +1,11 @@
 {
-  "rules": {}
+  "rules": {
+    "commission.default": {
+      "functions": {
+        "example_app.app.calculate_commission": {
+          "code_hash": "68d2e6ec289f5086b885b29ce87585b435663b48b7fbee75247c70bd92ff6fd4"
+        }
+      }
+    }
+  }
 }
