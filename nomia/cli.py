@@ -6,6 +6,18 @@ from nomia.services.validator import validate
 app = typer.Typer(help="Nomia CLI")
 
 
+def format_issue(issue: dict) -> str:
+    issue_type = issue["type"]
+
+    if issue_type == "missing_implementation":
+        return f"- [{issue_type}] {issue['rule_id']}"
+
+    if "function" in issue:
+        return f"- [{issue_type}] {issue['function']} -> {issue['rule_id']}"
+
+    return f"- [{issue_type}] {issue['rule_id']}"
+
+
 @app.callback()
 def main(
     ctx: typer.Context,
@@ -50,7 +62,7 @@ def check_cmd(ctx: typer.Context) -> None:
 
     typer.echo("Nomia found pending items:")
     for issue in issues:
-        typer.echo(f"- [{issue['type']}] {issue['function']} -> {issue['rule_id']}")
+        typer.echo(format_issue(issue))
 
     raise typer.Exit(code=0)
 

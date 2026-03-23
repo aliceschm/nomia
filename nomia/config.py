@@ -28,7 +28,6 @@ def resolve_config_path(config_path: str | None = None) -> Path:
         f"No configuration file found. Expected {expected} in the current directory or its parents."
     )
 
-
 def load_config(config_path: str | None = None) -> dict:
     path = resolve_config_path(config_path)
 
@@ -44,6 +43,23 @@ def load_config(config_path: str | None = None) -> dict:
 
     if not isinstance(sources, list) or not all(isinstance(source, str) for source in sources):
         raise ValueError("'sources' must be a list of strings.")
+
+    rules = data.get("rules", [])
+
+    if not isinstance(rules, list):
+        raise ValueError("'rules' must be a list.")
+
+    for rule in rules:
+        if not isinstance(rule, dict):
+            raise ValueError("Each rule in 'rules' must be an object.")
+
+        rule_id = rule.get("id")
+
+        if rule_id is None:
+            raise ValueError("Each rule in 'rules' must define an 'id'.")
+
+        if not isinstance(rule_id, str) or not rule_id.strip():
+            raise ValueError("Rule 'id' must be a non-empty string.")
 
     data["_config_path"] = path
     data["_project_root"] = path.parent
