@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 from typing import Any
-from nomia.models import create_empty_state
+from nomia.models import create_empty_state, STATE_SCHEMA_VERSION_KEY, CURRENT_SCHEMA_VERSION
 
 STATE_DIR_NAME = ".nomia"
 STATE_FILE_NAME = "state.json"
@@ -18,7 +18,12 @@ def load_state(project_root: Path) -> dict[str, Any]:
         return create_empty_state()
 
     with path.open("r", encoding="utf-8") as file:
-        return json.load(file)
+        state = json.load(file)
+
+    if STATE_SCHEMA_VERSION_KEY not in state:
+        state[STATE_SCHEMA_VERSION_KEY] = CURRENT_SCHEMA_VERSION
+
+    return state
 
 
 def save_state(project_root: Path, state: dict[str, Any]) -> None:
