@@ -3,13 +3,15 @@ import typer
 from nomia.services.checker import check
 from nomia.services.validator import validate
 
+from nomia.models import ISSUE_MISSING_IMPLEMENTATION
+
 app = typer.Typer(help="Nomia CLI")
 
 
 def format_issue(issue: dict) -> str:
     issue_type = issue["type"]
 
-    if issue_type == "missing_implementation":
+    if issue_type == ISSUE_MISSING_IMPLEMENTATION:
         return f"- [{issue_type}] {issue['rule_id']}"
 
     if "function" in issue:

@@ -5,6 +5,12 @@ from nomia.discovery import discover_functions
 from nomia.fingerprint import fingerprint_function
 from nomia.state import load_state
 
+from nomia.models import (
+    code_changed_issue,
+    missing_implementation_issue,
+    not_validated_issue,
+)
+
 
 def check(config_path: str | None = None, verbose: bool = False) -> list[dict]:
     config = load_config(config_path)
@@ -21,12 +27,7 @@ def check(config_path: str | None = None, verbose: bool = False) -> list[dict]:
     missing_rule_ids = sorted(declared_rule_ids - discovered_rule_ids)
 
     for rule_id in missing_rule_ids:
-        issues.append(
-            {
-                "type": "missing_implementation",
-                "rule_id": rule_id,
-            }
-        )
+        issues.append(missing_implementation_issue(rule_id))
 
     for rule_id, func in discovered:
         qualified_name = f"{func.__module__}.{func.__qualname__}"
@@ -40,22 +41,10 @@ def check(config_path: str | None = None, verbose: bool = False) -> list[dict]:
         )
 
         if saved is None:
-            issues.append(
-                {
-                    "type": "not_validated",
-                    "rule_id": rule_id,
-                    "function": qualified_name,
-                }
-            )
+            issues.append(not_validated_issue(rule_id, qualified_name))
             continue
 
         if saved["code_hash"] != current_hash:
-            issues.append(
-                {
-                    "type": "code_changed",
-                    "rule_id": rule_id,
-                    "function": qualified_name,
-                }
-            )
+            issues.append(code_changed_issue(rule_id, qualified_name))
 
     return issues
