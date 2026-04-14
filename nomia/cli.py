@@ -66,7 +66,7 @@ def check_cmd(ctx: typer.Context) -> None:
     for issue in issues:
         typer.echo(format_issue(issue))
 
-    raise typer.Exit(code=0)
+    raise typer.Exit(code=1)
 
 
 if __name__ == "__main__":
