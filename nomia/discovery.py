@@ -23,7 +23,9 @@ def _collect_rule_functions(module: object) -> list[tuple[str, Callable]]:
     return discovered
 
 
-def discover_functions(config: dict, verbose: bool = False) -> list[tuple[str, Callable]]:
+def discover_functions(
+    config: dict, verbose: bool = False
+) -> list[tuple[str, Callable]]:
     project_root = config["_project_root"]
     sources = config["sources"]
 

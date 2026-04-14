@@ -5,6 +5,14 @@ from nomia.discovery import discover_functions
 from nomia.fingerprint import fingerprint_function
 from nomia.state import save_state
 
+from nomia.models import (
+    STATE_CODE_HASH_KEY,
+    STATE_FUNCTIONS_KEY,
+    STATE_RULES_KEY,
+    add_function_to_state,
+    create_empty_state,
+)
+
 
 def validate(config_path: str | None = None, verbose: bool = False) -> dict:
     config = load_config(config_path)
@@ -12,14 +20,18 @@ def validate(config_path: str | None = None, verbose: bool = False) -> dict:
 
     discovered = discover_functions(config=config, verbose=verbose)
 
-    state = {"rules": {}}
+    state = create_empty_state()
 
     for rule_id, func in discovered:
         qualified_name = f"{func.__module__}.{func.__qualname__}"
         code_hash = fingerprint_function(func)
 
-        state["rules"].setdefault(rule_id, {"functions": {}})
-        state["rules"][rule_id]["functions"][qualified_name] = {"code_hash": code_hash}
+        add_function_to_state(
+            state,
+            rule_id,
+            qualified_name,
+            code_hash,
+        )
 
     save_state(project_root, state)
     return state

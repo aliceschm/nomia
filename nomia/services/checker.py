@@ -9,6 +9,9 @@ from nomia.models import (
     code_changed_issue,
     missing_implementation_issue,
     not_validated_issue,
+    STATE_CODE_HASH_KEY,
+    STATE_FUNCTIONS_KEY,
+    STATE_RULES_KEY,
 )
 
 
@@ -34,9 +37,9 @@ def check(config_path: str | None = None, verbose: bool = False) -> list[dict]:
         current_hash = fingerprint_function(func)
 
         saved = (
-            saved_state.get("rules", {})
+            saved_state.get(STATE_RULES_KEY, {})
             .get(rule_id, {})
-            .get("functions", {})
+            .get(STATE_FUNCTIONS_KEY, {})
             .get(qualified_name)
         )
 
@@ -44,7 +47,7 @@ def check(config_path: str | None = None, verbose: bool = False) -> list[dict]:
             issues.append(not_validated_issue(rule_id, qualified_name))
             continue
 
-        if saved["code_hash"] != current_hash:
+        if saved[STATE_CODE_HASH_KEY] != current_hash:
             issues.append(code_changed_issue(rule_id, qualified_name))
 
     return issues

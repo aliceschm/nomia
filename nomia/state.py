@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 from typing import Any
-
+from nomia.models import create_empty_state
 
 STATE_DIR_NAME = ".nomia"
 STATE_FILE_NAME = "state.json"
@@ -15,7 +15,7 @@ def load_state(project_root: Path) -> dict[str, Any]:
     path = _state_file(project_root)
 
     if not path.exists():
-        return {"rules": {}}
+        return create_empty_state()
 
     with path.open("r", encoding="utf-8") as file:
         return json.load(file)
