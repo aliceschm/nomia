@@ -10,7 +10,7 @@ def validate(config_path: str | None = None, verbose: bool = False) -> dict:
     config = load_config(config_path)
     project_root: Path = config["_project_root"]
 
-    discovered = discover_functions(config_path=config_path, verbose=verbose)
+    discovered = discover_functions(config=config, verbose=verbose)
 
     state = {"rules": {}}
 

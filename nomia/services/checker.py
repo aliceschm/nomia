@@ -10,7 +10,7 @@ def check(config_path: str | None = None, verbose: bool = False) -> list[dict]:
     config = load_config(config_path)
     project_root: Path = config["_project_root"]
 
-    discovered = discover_functions(config_path=config_path, verbose=verbose)
+    discovered = discover_functions(config=config, verbose=verbose)
     saved_state = load_state(project_root)
 
     issues: list[dict] = []
