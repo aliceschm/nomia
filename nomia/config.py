@@ -28,6 +28,7 @@ def resolve_config_path(config_path: str | None = None) -> Path:
         f"No configuration file found. Expected {expected} in the current directory or its parents."
     )
 
+
 def load_config(config_path: str | None = None) -> dict:
     path = resolve_config_path(config_path)
 
@@ -39,9 +40,13 @@ def load_config(config_path: str | None = None) -> dict:
 
     sources = data.get("sources")
     if not sources:
-        raise ValueError("Configuration file must define at least one source in 'sources'.")
+        raise ValueError(
+            "Configuration file must define at least one source in 'sources'."
+        )
 
-    if not isinstance(sources, list) or not all(isinstance(source, str) for source in sources):
+    if not isinstance(sources, list) or not all(
+        isinstance(source, str) for source in sources
+    ):
         raise ValueError("'sources' must be a list of strings.")
 
     rules = data.get("rules", [])
@@ -61,7 +66,22 @@ def load_config(config_path: str | None = None) -> dict:
         if not isinstance(rule_id, str) or not rule_id.strip():
             raise ValueError("Rule 'id' must be a non-empty string.")
 
+    project_root = path.parent
+
+    for source in sources:
+        source_path = (project_root / source).resolve()
+
+        if not source_path.exists():
+            raise ValueError(f"Configured source does not exist: {source}")
+
+        try:
+            source_path.relative_to(project_root)
+        except ValueError as exc:
+            raise ValueError(
+                f"Configured source must be inside the project root: {source}"
+            ) from exc
+        
     data["_config_path"] = path
-    data["_project_root"] = path.parent
+    data["_project_root"] = project_root
 
     return data
