@@ -23,3 +23,17 @@ def format_issue(issue: dict) -> str:
 def log(message: str, verbose: bool = False) -> None:
     if verbose:
         typer.echo(message)
+
+def summarize_issues(issues: list[dict]) -> list[str]:
+    counts: dict[str, int] = {}
+
+    for issue in issues:
+        issue_type = issue["type"]
+        counts[issue_type] = counts.get(issue_type, 0) + 1
+
+    lines: list[str] = []
+
+    for issue_type in sorted(counts):
+        lines.append(f"- {issue_type}: {counts[issue_type]}")
+
+    return lines

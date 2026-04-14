@@ -2,8 +2,7 @@ import typer
 
 from nomia.services.checker import check
 from nomia.services.validator import validate
-from nomia.output import format_issue
-from nomia.models import ISSUE_MISSING_IMPLEMENTATION, ISSUE_IMPLEMENTATION_REMOVED
+from nomia.output import format_issue, summarize_issues
 
 app = typer.Typer(help="Nomia CLI")
 
@@ -50,7 +49,13 @@ def check_cmd(ctx: typer.Context) -> None:
         typer.echo("Nomia is up to date.")
         raise typer.Exit(code=0)
 
-    typer.echo("Nomia found pending items:")
+    typer.echo(f"Nomia found {len(issues)} pending items.")
+
+    for line in summarize_issues(issues):
+        typer.echo(line)
+
+    typer.echo("")
+
     for issue in issues:
         typer.echo(format_issue(issue))
 
