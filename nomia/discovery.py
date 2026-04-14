@@ -46,7 +46,14 @@ def discover_functions(
         for file in files:
             module_name = path_to_module(file, project_root)
             log(f"Importing: {module_name}", verbose)
-            module = importlib.import_module(module_name)
+
+            try:
+                module = importlib.import_module(module_name)
+            except Exception as exc:
+                raise RuntimeError(
+                    f"Failed to import module '{module_name}' from '{file}'. Original error: {exc}"
+                ) from exc
+
             discovered.extend(_collect_rule_functions(module))
 
     return discovered
