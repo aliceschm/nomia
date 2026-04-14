@@ -5,6 +5,7 @@ from nomia import rule
 def calculate_commission(amount: float) -> float:
     return amount * 0.30
 
+
 @rule("comission.bonus")
 def calculate_bonis(amount: float) -> float:
     return amount * 0.2

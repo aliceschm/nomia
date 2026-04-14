@@ -19,9 +19,7 @@ def validate(config_path: str | None = None, verbose: bool = False) -> dict:
         code_hash = fingerprint_function(func)
 
         state["rules"].setdefault(rule_id, {"functions": {}})
-        state["rules"][rule_id]["functions"][qualified_name] = {
-            "code_hash": code_hash
-        }
+        state["rules"][rule_id]["functions"][qualified_name] = {"code_hash": code_hash}
 
     save_state(project_root, state)
     return state

@@ -16,7 +16,6 @@ def find_python_files(root: Path) -> list[Path]:
     files: list[Path] = []
 
     for path in root.rglob("*.py"):
-
         if any(part in IGNORED for part in path.parts):
             continue
 
