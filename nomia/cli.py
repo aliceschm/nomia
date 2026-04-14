@@ -35,7 +35,15 @@ def validate_cmd(ctx: typer.Context) -> None:
         config_path=ctx.obj["config_path"],
         verbose=ctx.obj["verbose"],
     )
-    typer.echo(f"Validation snapshot created. Rules tracked: {len(state['rules'])}")
+
+    rules = state.get("rules", {})
+
+    rule_count = len(rules)
+    function_count = sum(len(rule_data.get("functions", {})) for rule_data in rules.values())
+
+    typer.echo(
+        f"Validation snapshot created. Rules tracked: {rule_count}, functions tracked: {function_count}"
+    )
 
 
 @app.command(name="check")
