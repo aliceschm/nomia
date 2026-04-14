@@ -66,7 +66,22 @@ def load_config(config_path: str | None = None) -> dict:
         if not isinstance(rule_id, str) or not rule_id.strip():
             raise ValueError("Rule 'id' must be a non-empty string.")
 
+    project_root = path.parent
+
+    for source in sources:
+        source_path = (project_root / source).resolve()
+
+        if not source_path.exists():
+            raise ValueError(f"Configured source does not exist: {source}")
+
+        try:
+            source_path.relative_to(project_root)
+        except ValueError as exc:
+            raise ValueError(
+                f"Configured source must be inside the project root: {source}"
+            ) from exc
+        
     data["_config_path"] = path
-    data["_project_root"] = path.parent
+    data["_project_root"] = project_root
 
     return data
