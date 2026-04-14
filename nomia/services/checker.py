@@ -10,6 +10,7 @@ from nomia.models import (
     missing_implementation_issue,
     not_validated_issue,
     implementation_removed_issue,
+    rule_removed_issue,
     STATE_CODE_HASH_KEY,
     STATE_FUNCTIONS_KEY,
     STATE_RULES_KEY,
@@ -32,6 +33,13 @@ def check(config_path: str | None = None, verbose: bool = False) -> list[dict]:
 
     for rule_id in missing_rule_ids:
         issues.append(missing_implementation_issue(rule_id))
+
+    saved_rule_ids = set(saved_state.get(STATE_RULES_KEY, {}).keys())
+    
+    removed_rule_ids = sorted(saved_rule_ids - declared_rule_ids)
+
+    for rule_id in removed_rule_ids:
+        issues.append(rule_removed_issue(rule_id))
 
     discovered_functions_by_rule: dict[str, set[str]] = {}
 
