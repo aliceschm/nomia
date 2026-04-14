@@ -22,7 +22,10 @@ def validate(config_path: str | None = None, verbose: bool = False) -> dict:
 
     state = create_empty_state()
 
-    for rule_id, func in discovered:
+    for rule_id, func in sorted(
+        discovered,
+        key=lambda item: (item[0], f"{item[1].__module__}.{item[1].__qualname__}"),
+    ):
         qualified_name = f"{func.__module__}.{func.__qualname__}"
         code_hash = fingerprint_function(func)
 

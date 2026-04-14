@@ -13,7 +13,8 @@ def _is_rule_function(obj: object) -> bool:
 def _collect_rule_functions(module: object) -> list[tuple[str, Callable]]:
     discovered: list[tuple[str, Callable]] = []
 
-    for obj in module.__dict__.values():
+    for name in sorted(module.__dict__):
+        obj = module.__dict__[name]
         if not _is_rule_function(obj):
             continue
 
@@ -38,7 +39,7 @@ def discover_functions(
 
     for source in sources:
         root = (project_root / source).resolve()
-        files = find_python_files(root)
+        files = sorted(find_python_files(root))
 
         log(f"Scanning source: {root}", verbose)
         log(f"Python files found: {len(files)}", verbose)
