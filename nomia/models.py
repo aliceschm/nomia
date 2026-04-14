@@ -1,6 +1,7 @@
 ISSUE_MISSING_IMPLEMENTATION = "missing_implementation"
 ISSUE_NOT_VALIDATED = "not_validated"
 ISSUE_CODE_CHANGED = "code_changed"
+ISSUE_IMPLEMENTATION_REMOVED = "implementation_removed"
 STATE_RULES_KEY = "rules"
 STATE_FUNCTIONS_KEY = "functions"
 STATE_CODE_HASH_KEY = "code_hash"
@@ -28,6 +29,12 @@ def code_changed_issue(rule_id: str, function: str) -> dict:
         "function": function,
     }
 
+def implementation_removed_issue(rule_id: str, function: str) -> dict:
+    return {
+        "type": ISSUE_IMPLEMENTATION_REMOVED,
+        "rule_id": rule_id,
+        "function": function,
+    }
 
 def create_empty_state() -> dict:
     return {
