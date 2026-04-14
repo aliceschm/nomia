@@ -22,11 +22,20 @@ def validate(config_path: str | None = None, verbose: bool = False) -> dict:
 
     state = create_empty_state()
 
+    seen: set[tuple[str, str]] = set()
+
     for rule_id, func in sorted(
         discovered,
-        key=lambda item: (item[0], f"{item[1].__module__}.{item[1].__qualname__}"),
+        key=lambda item: (item[0], f"{item[1].__module__}.{item[1].__qualname__}")
     ):
         qualified_name = f"{func.__module__}.{func.__qualname__}"
+
+        key = (rule_id, qualified_name)
+        if key in seen:
+            continue
+
+        seen.add(key)
+
         code_hash = fingerprint_function(func)
 
         add_function_to_state(

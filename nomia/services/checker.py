@@ -21,7 +21,20 @@ def check(config_path: str | None = None, verbose: bool = False) -> list[dict]:
     config = load_config(config_path)
     project_root: Path = config["_project_root"]
 
-    discovered = discover_functions(config=config, verbose=verbose)
+    raw_discovered = discover_functions(config=config, verbose=verbose)
+    seen: set[tuple[str, str]] = set()
+    discovered: list[tuple[str, object]] = []
+
+    for rule_id, func in raw_discovered:
+        qualified_name = f"{func.__module__}.{func.__qualname__}"
+        key = (rule_id, qualified_name)
+
+        if key in seen:
+            continue
+
+        seen.add(key)
+        discovered.append((rule_id, func))
+    
     saved_state = load_state(project_root)
 
     issues: list[dict] = []
