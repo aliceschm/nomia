@@ -87,3 +87,17 @@ def discover_functions(
         discovered.extend(_collect_rule_functions(module))
 
     return discovered
+
+def discover_untracked_functions(
+    config: dict, verbose: bool = False
+) -> list[Callable]:
+    discovered: list[Callable] = []
+
+    for module in discover_modules(config=config, verbose=verbose):
+        for func in _collect_module_callables(module):
+            if _is_rule_function(func):
+                continue
+
+            discovered.append(func)
+
+    return discovered
