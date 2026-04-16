@@ -69,6 +69,7 @@ def load_config(config_path: str | None = None) -> dict:
             raise ValueError("Rule 'id' must be a non-empty string.")
 
         normalized_rule_id = rule_id.strip()
+        rule["id"] = normalized_rule_id
 
         if normalized_rule_id in seen_rule_ids:
             raise ValueError(f"Duplicate rule id found in config: {normalized_rule_id}")
