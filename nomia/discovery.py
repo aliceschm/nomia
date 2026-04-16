@@ -15,7 +15,12 @@ def _collect_rule_functions(module: object) -> list[tuple[str, Callable]]:
 
     for name in sorted(module.__dict__):
         obj = module.__dict__[name]
+
         if not _is_rule_function(obj):
+            continue
+
+        # only keep functions defined in this module (ignore imports/re-exports)
+        if getattr(obj, "__module__", None) != module.__name__:
             continue
 
         rule_id = getattr(obj, "__nomia_rule__")
