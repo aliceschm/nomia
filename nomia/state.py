@@ -4,6 +4,7 @@ from typing import Any
 
 from nomia.models import (
     CURRENT_SCHEMA_VERSION,
+    STATE_RULES_KEY,
     STATE_SCHEMA_VERSION_KEY,
     create_empty_state,
 )
@@ -33,6 +34,13 @@ def load_state(project_root: Path) -> dict[str, Any]:
 
     if STATE_SCHEMA_VERSION_KEY not in state:
         state[STATE_SCHEMA_VERSION_KEY] = CURRENT_SCHEMA_VERSION
+
+    rules = state.get(STATE_RULES_KEY)
+
+    if rules is None:
+        state[STATE_RULES_KEY] = {}
+    elif not isinstance(rules, dict):
+        raise ValueError(f"State field '{STATE_RULES_KEY}' must be an object: {path}")
 
     return state
 
