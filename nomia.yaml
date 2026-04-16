@@ -10,3 +10,7 @@ rules:
   - id: comission.bonus
     title: Bônus especial
     description: Bônus a ser aplicado em cargos x
+
+  - id: comission.bonus_v2
+    title: Bônus especial
+    description: Bônus a ser aplicado em cargos x

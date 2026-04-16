@@ -54,6 +54,8 @@ def load_config(config_path: str | None = None) -> dict:
     if not isinstance(rules, list):
         raise ValueError("'rules' must be a list.")
 
+    seen_rule_ids: set[str] = set()
+
     for rule in rules:
         if not isinstance(rule, dict):
             raise ValueError("Each rule in 'rules' must be an object.")
@@ -65,6 +67,14 @@ def load_config(config_path: str | None = None) -> dict:
 
         if not isinstance(rule_id, str) or not rule_id.strip():
             raise ValueError("Rule 'id' must be a non-empty string.")
+
+        normalized_rule_id = rule_id.strip()
+        rule["id"] = normalized_rule_id
+
+        if normalized_rule_id in seen_rule_ids:
+            raise ValueError(f"Duplicate rule id found in config: {normalized_rule_id}")
+
+        seen_rule_ids.add(normalized_rule_id)
 
     project_root = path.parent
 
@@ -80,7 +90,7 @@ def load_config(config_path: str | None = None) -> dict:
             raise ValueError(
                 f"Configured source must be inside the project root: {source}"
             ) from exc
-        
+
     data["_config_path"] = path
     data["_project_root"] = project_root
 

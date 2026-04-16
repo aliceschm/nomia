@@ -1,8 +1,9 @@
 import typer
 
+from nomia.output import format_issue, summarize_issues
+from nomia.services.auditor import audit_untracked
 from nomia.services.checker import check
 from nomia.services.validator import validate
-from nomia.output import format_issue, summarize_issues
 
 app = typer.Typer(help="Nomia CLI")
 
@@ -37,9 +38,12 @@ def validate_cmd(ctx: typer.Context) -> None:
     )
 
     rules = state.get("rules", {})
-
     rule_count = len(rules)
-    function_count = sum(len(rule_data.get("functions", {})) for rule_data in rules.values())
+
+    function_count = 0
+    for rule_data in rules.values():
+        functions = rule_data.get("functions", {})
+        function_count += len(functions)
 
     typer.echo(
         f"Validation snapshot created. Rules tracked: {rule_count}, functions tracked: {function_count}"
@@ -68,6 +72,25 @@ def check_cmd(ctx: typer.Context) -> None:
         typer.echo(format_issue(issue))
 
     raise typer.Exit(code=1)
+
+
+@app.command(name="audit")
+def audit_cmd(ctx: typer.Context) -> None:
+    functions = audit_untracked(
+        config_path=ctx.obj["config_path"],
+        verbose=ctx.obj["verbose"],
+    )
+
+    if not functions:
+        typer.echo("No untracked functions found.")
+        raise typer.Exit(code=0)
+
+    typer.echo(f"Found {len(functions)} untracked functions.")
+
+    for function_name in functions:
+        typer.echo(f"- {function_name}")
+
+    raise typer.Exit(code=0)
 
 
 if __name__ == "__main__":
