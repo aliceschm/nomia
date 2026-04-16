@@ -1,8 +1,8 @@
 import typer
 
+from nomia.output import format_issue, summarize_issues
 from nomia.services.checker import check
 from nomia.services.validator import validate
-from nomia.output import format_issue, summarize_issues
 
 app = typer.Typer(help="Nomia CLI")
 
@@ -37,9 +37,12 @@ def validate_cmd(ctx: typer.Context) -> None:
     )
 
     rules = state.get("rules", {})
-
     rule_count = len(rules)
-    function_count = sum(len(rule_data.get("functions", {})) for rule_data in rules.values())
+
+    function_count = 0
+    for rule_data in rules.values():
+        functions = rule_data.get("functions", {})
+        function_count += len(functions)
 
     typer.echo(
         f"Validation snapshot created. Rules tracked: {rule_count}, functions tracked: {function_count}"
