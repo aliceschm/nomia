@@ -11,6 +11,7 @@ from nomia.models import (
     STATE_RULES_KEY,
     add_function_to_state,
     create_empty_state,
+    missing_implementation_issue,
 )
 
 
@@ -19,6 +20,19 @@ def validate(config_path: str | None = None, verbose: bool = False) -> dict:
     project_root: Path = config["_project_root"]
 
     discovered = discover_functions(config=config, verbose=verbose)
+
+    declared_rule_ids = {rule["id"] for rule in config.get("rules", [])}
+    discovered_rule_ids = {rule_id for rule_id, _ in discovered}
+
+    missing_rule_ids = sorted(declared_rule_ids - discovered_rule_ids)
+
+    if missing_rule_ids:
+        issues = [missing_implementation_issue(rule_id) for rule_id in missing_rule_ids]
+
+        for issue in issues:
+            print(f"- [{issue['type']}] {issue['rule_id']}")
+
+        raise SystemExit("Validation failed due to missing implementations.")
 
     state = create_empty_state()
 
