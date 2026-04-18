@@ -108,7 +108,7 @@ Nomia stores a snapshot of rule–code relationships and compares it over time.
 
 ### Drift is visible
 
-Changes in behavior are detected—even when tests still pass.
+Changes in behavior are detected, even when tests still pass.
 
 ---
 
@@ -204,7 +204,7 @@ Nomia is based on a simple idea:
 
 > If code evolves continuously, business rules should be tracked continuously too.
 
-It treats **rule alignment** as a first-class concern in the development lifecycle—just like tests, linting, and security checks.
+It treats **rule alignment** as a first-class concern in the development lifecycle, just like tests, linting, and security checks.
 
 ---
 
