@@ -238,3 +238,7 @@ This repository focuses on:
 Nomia helps you answer a question most systems ignore:
 
 > Does our code still reflect what the business intended?
+
+## License
+
+This project is licensed under the terms of the MIT License.
