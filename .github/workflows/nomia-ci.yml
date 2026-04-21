@@ -7,65 +7,20 @@ on:
 jobs:
   nomia:
     runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v6
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: "pip"
 
-      - name: Upgrade pip
-        run: python -m pip install --upgrade pip
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install .
 
-      - name: Install Nomia from current repository
-        run: python -m pip install .
+      - name: Run Nomia check
+        run: nomia check
 
-      - name: Run Nomia check and publish warnings
-        shell: bash
-        run: |
-          set +e
-          output=$(nomia check 2>&1)
-          status=$?
-
-          echo "$output"
-
-          while IFS= read -r line; do
-            [ -n "$line" ] && echo "::warning title=Nomia check::$line"
-          done <<< "$output"
-
-          echo "nomia_check_exit_code=$status" >> "$GITHUB_ENV"
-          exit 0
-
-      - name: Run Nomia audit and publish warnings
-        shell: bash
-        run: |
-          set +e
-          output=$(nomia audit 2>&1)
-          status=$?
-
-          echo "$output"
-
-          while IFS= read -r line; do
-            [ -n "$line" ] && echo "::warning title=Nomia audit::$line"
-          done <<< "$output"
-
-          echo "nomia_audit_exit_code=$status" >> "$GITHUB_ENV"
-          exit 0
-
-      - name: Write summary
-        shell: bash
-        run: |
-          {
-            echo "## Nomia results"
-            echo ""
-            echo "- check exit code: $nomia_check_exit_code"
-            echo "- audit exit code: $nomia_audit_exit_code"
-            echo ""
-            echo "This workflow is informational only and does not block merge."
-          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Run Nomia audit
+        run: nomia audit
