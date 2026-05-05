@@ -1,9 +1,17 @@
 {
+  "schema_version": 1,
   "rules": {
     "commission.default": {
       "functions": {
         "example_app.app.calculate_commission": {
-          "code_hash": "68d2e6ec289f5086b885b29ce87585b435663b48b7fbee75247c70bd92ff6fd4"
+          "code_hash": "b07a58869a1a497c2c67a72d50ddb528cb7a5028a09b550ba0d4154174fb5392"
+        }
+      }
+    },
+    "discount_eligibility": {
+      "functions": {
+        "example_app.app.calculate_bonis": {
+          "code_hash": "17f7f5bdfff45f0804ab92370564ab694934e2e705eb3e7ec37cad22a050aa33"
         }
       }
     }
