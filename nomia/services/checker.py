@@ -34,7 +34,7 @@ def check(config_path: str | None = None, verbose: bool = False) -> list[dict]:
 
         seen.add(key)
         discovered.append((rule_id, func))
-    
+
     saved_state = load_state(project_root)
 
     issues: list[dict] = []
@@ -48,7 +48,7 @@ def check(config_path: str | None = None, verbose: bool = False) -> list[dict]:
         issues.append(missing_implementation_issue(rule_id))
 
     saved_rule_ids = set(saved_state.get(STATE_RULES_KEY, {}).keys())
-    
+
     removed_rule_ids = sorted(saved_rule_ids - declared_rule_ids)
 
     for rule_id in removed_rule_ids:
@@ -90,3 +90,13 @@ def check(config_path: str | None = None, verbose: bool = False) -> list[dict]:
             issues.append(code_changed_issue(rule_id, qualified_name))
 
     return issues
+
+
+def hey(issues, config, discovered):
+    declared_rule_ids = {rule["id"] for rule in config.get("rules", [])}
+    discovered_rule_ids = {rule_id for rule_id, _ in discovered}
+
+    missing_rule_ids = declared_rule_ids - discovered_rule_ids
+
+    for rule_id in missing_rule_ids:
+        issues.append(missing_implementation_issue(rule_id))

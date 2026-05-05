@@ -5,7 +5,9 @@ from collections.abc import Callable
 
 def fingerprint_function(func: Callable) -> str:
     try:
-        source = inspect.getsource(func.__wrapped__ if hasattr(func, "__wrapped__") else func)
+        source = inspect.getsource(
+            func.__wrapped__ if hasattr(func, "__wrapped__") else func
+        )
     except (OSError, TypeError):
         code = getattr(func, "__code__", None)
 

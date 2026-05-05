@@ -2,15 +2,5 @@ sources:
   - example_app
 
 rules:
-  - id: commission.default
-    title: Comissão padrão
-    description: Comissão deve permanecer em 20%.
-    version: 1
-
-  - id: comission.bonus
-    title: Bônus especial
-    description: Bônus a ser aplicado em cargos x
-
-  - id: comission.bonus_v2
-    title: Bônus especial
-    description: Bônus a ser aplicado em cargos x
+  - id: discount_eligibility
+    description: Apenas clientes adimplentes podem receber desconto.

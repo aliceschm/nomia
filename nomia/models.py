@@ -32,12 +32,14 @@ def code_changed_issue(rule_id: str, function: str) -> dict:
         "function": function,
     }
 
+
 def implementation_removed_issue(rule_id: str, function: str) -> dict:
     return {
         "type": ISSUE_IMPLEMENTATION_REMOVED,
         "rule_id": rule_id,
         "function": function,
     }
+
 
 def create_empty_state() -> dict:
     return {
@@ -51,6 +53,7 @@ def rule_removed_issue(rule_id: str) -> dict:
         "type": ISSUE_RULE_REMOVED,
         "rule_id": rule_id,
     }
+
 
 def add_function_to_state(
     state: dict,

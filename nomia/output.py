@@ -20,9 +20,11 @@ def format_issue(issue: dict) -> str:
 
     return f"- [{issue_type}] {issue['rule_id']}"
 
+
 def log(message: str, verbose: bool = False) -> None:
     if verbose:
         typer.echo(message)
+
 
 def summarize_issues(issues: list[dict]) -> list[str]:
     counts: dict[str, int] = {}
