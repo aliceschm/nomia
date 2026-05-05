@@ -7,9 +7,7 @@ def calculate_commission(amount: float) -> float:
 
 
 # duplicate reference (same function, different name)
-duplicate_commission = calculate_commission
 
-
-@rule("comission.bonus")
-def calculate_bonis(amount: float) -> float:
+@rule("discount_eligibility")
+def calculate_discount(amount: float) -> float:
     return amount * 0.2
