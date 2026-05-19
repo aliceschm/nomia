@@ -6,6 +6,7 @@ from nomia.models import (
     CURRENT_SCHEMA_VERSION,
     STATE_CODE_HASH_KEY,
     STATE_FUNCTIONS_KEY,
+    STATE_RULE_HASH_KEY,
     STATE_RULES_KEY,
     STATE_SCHEMA_VERSION_KEY,
     create_empty_state,
@@ -53,6 +54,15 @@ def load_state(project_root: Path) -> dict[str, Any]:
         if not isinstance(rule_data, dict):
             raise ValueError(
                 f"State entry for rule '{rule_id}' must be an object: {path}"
+            )
+
+        rule_hash = rule_data.get(STATE_RULE_HASH_KEY)
+
+        if rule_hash is not None and (
+            not isinstance(rule_hash, str) or not rule_hash.strip()
+        ):
+            raise ValueError(
+                f"State field '{STATE_RULE_HASH_KEY}' for rule '{rule_id}' must be a non-empty string: {path}"
             )
 
         functions = rule_data.get(STATE_FUNCTIONS_KEY)
