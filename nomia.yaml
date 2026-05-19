@@ -1,5 +1,5 @@
 sources:
-  - example_app
+  - example_app_db
 
 rules:
   - id: discount_eligibility
