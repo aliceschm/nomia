@@ -34,7 +34,7 @@ Nomia introduces a simple workflow:
 3. **Validate the alignment**
 4. **Detect changes over time**
 
-It doesn’t try to model your domain.  
+It doesn’t try to model your domain.
 It just makes the relationship between **intent** and **implementation** visible.
 
 ---
@@ -85,8 +85,14 @@ nomia check
 
 Now you have a decision to make:
 
-- the rule changed → update the config  
-- the code is wrong → fix the implementation  
+- the rule changed → update the config
+- the code is wrong → fix the implementation
+
+Nomia also fingerprints the declared rule content. If fields such as
+`description`, `rationale`, `examples`, `severity`, `tags`, or other rule
+metadata change after validation, `nomia check` reports that the rule definition
+must be revalidated. This is content drift detection, not semantic proof that
+the code behavior still matches the business intent.
 
 ---
 
@@ -104,11 +110,13 @@ Developers explicitly link implementations using a decorator.
 
 ### Alignment is versioned
 
-Nomia stores a snapshot of rule–code relationships and compares it over time.
+Nomia stores a snapshot of rule definitions, code fingerprints, and rule–code
+relationships, then compares that snapshot over time.
 
 ### Drift is visible
 
-Changes in behavior are detected, even when tests still pass.
+Implementation drift, rule definition drift, and mapping drift are detected,
+even when tests still pass.
 
 ---
 
@@ -138,8 +146,10 @@ nomia validate
 ```
 
 Use it when:
-- introducing new rules  
-- updating rule mappings  
+- introducing new rules
+- updating rule mappings
+- accepting changes to a rule definition
+- accepting changes to an implementation
 
 ---
 
@@ -152,9 +162,15 @@ nomia check
 ```
 
 Use it in:
-- CI pipelines  
-- pull requests  
-- pre-merge checks  
+- CI pipelines
+- pull requests
+- pre-merge checks
+
+`check` reports:
+
+- implementation drift when a linked function changes
+- rule definition drift when YAML rule content changes
+- mapping drift when rules or linked functions are added, removed, or missing
 
 ---
 
@@ -214,11 +230,11 @@ Nomia is currently an MVP.
 
 It already supports:
 
-- rule declaration via YAML  
-- decorator-based linking  
-- deterministic code discovery  
-- fingerprint-based change detection  
-- CI-friendly validation  
+- rule declaration via YAML
+- decorator-based linking
+- deterministic code discovery
+- fingerprint-based implementation and rule definition change detection
+- CI-friendly validation
 
 ---
 

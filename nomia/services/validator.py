@@ -2,16 +2,14 @@ from pathlib import Path
 
 from nomia.config import load_config
 from nomia.discovery import discover_functions
-from nomia.fingerprint import fingerprint_function
+from nomia.fingerprint import fingerprint_function, fingerprint_rule
 from nomia.state import save_state
 
 from nomia.models import (
-    STATE_CODE_HASH_KEY,
-    STATE_FUNCTIONS_KEY,
-    STATE_RULES_KEY,
     add_function_to_state,
     create_empty_state,
     missing_implementation_issue,
+    set_rule_hash,
 )
 
 
@@ -21,7 +19,8 @@ def validate(config_path: str | None = None, verbose: bool = False) -> dict:
 
     discovered = discover_functions(config=config, verbose=verbose)
 
-    declared_rule_ids = {rule["id"] for rule in config.get("rules", [])}
+    rules_by_id = {rule["id"]: rule for rule in config.get("rules", [])}
+    declared_rule_ids = set(rules_by_id)
     discovered_rule_ids = {rule_id for rule_id, _ in discovered}
 
     missing_rule_ids = sorted(declared_rule_ids - discovered_rule_ids)
@@ -35,6 +34,9 @@ def validate(config_path: str | None = None, verbose: bool = False) -> dict:
         raise SystemExit("Validation failed due to missing implementations.")
 
     state = create_empty_state()
+
+    for rule_id, rule in sorted(rules_by_id.items()):
+        set_rule_hash(state, rule_id, fingerprint_rule(rule))
 
     seen: set[tuple[str, str]] = set()
 

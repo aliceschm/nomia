@@ -1,5 +1,3 @@
-from collections.abc import Callable
-
 from nomia.config import load_config
 from nomia.discovery import discover_untracked_functions
 
