@@ -88,9 +88,8 @@ def discover_functions(
 
     return discovered
 
-def discover_untracked_functions(
-    config: dict, verbose: bool = False
-) -> list[Callable]:
+
+def discover_untracked_functions(config: dict, verbose: bool = False) -> list[Callable]:
     discovered: list[Callable] = []
 
     for module in discover_modules(config=config, verbose=verbose):

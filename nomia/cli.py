@@ -1,11 +1,20 @@
+from enum import Enum
+
 import typer
 
-from nomia.output import format_issue, summarize_issues
+from nomia.output import render_check_output
 from nomia.services.auditor import audit_untracked
 from nomia.services.checker import check
 from nomia.services.validator import validate
 
 app = typer.Typer(help="Nomia CLI")
+
+
+class CheckOutputFormat(str, Enum):
+    default = "default"
+    compact = "compact"
+    detailed = "detailed"
+    json = "json"
 
 
 @app.callback()
@@ -51,27 +60,21 @@ def validate_cmd(ctx: typer.Context) -> None:
 
 
 @app.command(name="check")
-def check_cmd(ctx: typer.Context) -> None:
+def check_cmd(
+    ctx: typer.Context,
+    format_mode: CheckOutputFormat = typer.Option(
+        CheckOutputFormat.default,
+        "--format",
+        help="Output format: default, compact, detailed, or json.",
+    ),
+) -> None:
     issues = check(
         config_path=ctx.obj["config_path"],
         verbose=ctx.obj["verbose"],
     )
 
-    if not issues:
-        typer.echo("Nomia is up to date.")
-        raise typer.Exit(code=0)
-
-    typer.echo(f"Nomia found {len(issues)} pending items.")
-
-    for line in summarize_issues(issues):
-        typer.echo(line)
-
-    typer.echo("")
-
-    for issue in issues:
-        typer.echo(format_issue(issue))
-
-    raise typer.Exit(code=1)
+    typer.echo(render_check_output(issues, format_mode.value))
+    raise typer.Exit(code=1 if issues else 0)
 
 
 @app.command(name="audit")
