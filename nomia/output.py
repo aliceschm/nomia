@@ -18,6 +18,9 @@ def format_issue(issue: dict) -> str:
     if "function" in issue:
         return f"- [{issue_type}] {issue['function']} -> {issue['rule_id']}"
 
+    if "message" in issue:
+        return f"- [{issue_type}] {issue['rule_id']}: {issue['message']}"
+
     return f"- [{issue_type}] {issue['rule_id']}"
 
 

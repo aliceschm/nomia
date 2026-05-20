@@ -2,7 +2,7 @@ from pathlib import Path
 
 from nomia.config import load_config
 from nomia.discovery import discover_functions
-from nomia.fingerprint import fingerprint_function
+from nomia.fingerprint import fingerprint_function, fingerprint_rule
 from nomia.state import load_state
 
 from nomia.models import (
@@ -11,8 +11,10 @@ from nomia.models import (
     not_validated_issue,
     implementation_removed_issue,
     rule_removed_issue,
+    rule_content_changed_issue,
     STATE_CODE_HASH_KEY,
     STATE_FUNCTIONS_KEY,
+    STATE_RULE_HASH_KEY,
     STATE_RULES_KEY,
 )
 
@@ -39,7 +41,8 @@ def check(config_path: str | None = None, verbose: bool = False) -> list[dict]:
 
     issues: list[dict] = []
 
-    declared_rule_ids = {rule["id"] for rule in config.get("rules", [])}
+    rules_by_id = {rule["id"]: rule for rule in config.get("rules", [])}
+    declared_rule_ids = set(rules_by_id)
     discovered_rule_ids = {rule_id for rule_id, _func in discovered}
 
     missing_rule_ids = sorted(declared_rule_ids - discovered_rule_ids)
@@ -54,13 +57,22 @@ def check(config_path: str | None = None, verbose: bool = False) -> list[dict]:
     for rule_id in removed_rule_ids:
         issues.append(rule_removed_issue(rule_id))
 
+    saved_rules = saved_state.get(STATE_RULES_KEY, {})
+
+    for rule_id, rule in sorted(rules_by_id.items()):
+        saved_rule = saved_rules.get(rule_id)
+
+        if saved_rule is None:
+            continue
+
+        if saved_rule.get(STATE_RULE_HASH_KEY) != fingerprint_rule(rule):
+            issues.append(rule_content_changed_issue(rule_id))
+
     discovered_functions_by_rule: dict[str, set[str]] = {}
 
     for rule_id, func in discovered:
         qualified_name = f"{func.__module__}.{func.__qualname__}"
         discovered_functions_by_rule.setdefault(rule_id, set()).add(qualified_name)
-
-    saved_rules = saved_state.get(STATE_RULES_KEY, {})
 
     for rule_id, rule_data in saved_rules.items():
         saved_functions = rule_data.get(STATE_FUNCTIONS_KEY, {})
