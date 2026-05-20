@@ -3,4 +3,4 @@ sources:
 
 rules:
   - id: discount_eligibility
-    description: Apenas clientes adimplentes podem receber desconto.
+    description: Clientes adimplentes ou com acordo de pagamento vigente são elegíveis para descontos.
