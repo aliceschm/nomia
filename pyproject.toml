@@ -6,6 +6,9 @@ build-backend = "setuptools.build_meta"
 name = "nomia"
 version = "0.1.0"
 description = "Business rule tracking for Python functions"
+authors = [{ name = "Alice Schmidt" }]
+readme = "README.md"
+license = { file = "LICENSE" }
 requires-python = ">=3.11"
 dependencies = [
   "typer>=0.12.0",
