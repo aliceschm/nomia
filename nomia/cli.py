@@ -10,6 +10,11 @@ from nomia.services.validator import validate
 app = typer.Typer(help="Nomia CLI")
 
 
+def _handle_cli_error(exc: Exception) -> None:
+    typer.echo(f"Error: {exc}", err=True)
+    raise typer.Exit(code=1) from exc
+
+
 class CheckOutputFormat(str, Enum):
     default = "default"
     compact = "compact"
@@ -41,10 +46,13 @@ def main(
 
 @app.command(name="validate")
 def validate_cmd(ctx: typer.Context) -> None:
-    state = validate(
-        config_path=ctx.obj["config_path"],
-        verbose=ctx.obj["verbose"],
-    )
+    try:
+        state = validate(
+            config_path=ctx.obj["config_path"],
+            verbose=ctx.obj["verbose"],
+        )
+    except (FileNotFoundError, RuntimeError, ValueError) as exc:
+        _handle_cli_error(exc)
 
     rules = state.get("rules", {})
     rule_count = len(rules)
@@ -68,10 +76,13 @@ def check_cmd(
         help="Output format: default, compact, detailed, or json.",
     ),
 ) -> None:
-    issues = check(
-        config_path=ctx.obj["config_path"],
-        verbose=ctx.obj["verbose"],
-    )
+    try:
+        issues = check(
+            config_path=ctx.obj["config_path"],
+            verbose=ctx.obj["verbose"],
+        )
+    except (FileNotFoundError, RuntimeError, ValueError) as exc:
+        _handle_cli_error(exc)
 
     typer.echo(render_check_output(issues, format_mode.value))
     raise typer.Exit(code=1 if issues else 0)
@@ -79,10 +90,13 @@ def check_cmd(
 
 @app.command(name="audit")
 def audit_cmd(ctx: typer.Context) -> None:
-    functions = audit_untracked(
-        config_path=ctx.obj["config_path"],
-        verbose=ctx.obj["verbose"],
-    )
+    try:
+        functions = audit_untracked(
+            config_path=ctx.obj["config_path"],
+            verbose=ctx.obj["verbose"],
+        )
+    except (FileNotFoundError, RuntimeError, ValueError) as exc:
+        _handle_cli_error(exc)
 
     if not functions:
         typer.echo("No untracked functions found.")
