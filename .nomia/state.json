@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "rules": {
+    "discount_eligibility": {
+      "functions": {
+        "example_app_db.app.validate_discount_eligibility": {
+          "code_hash": "a7e6a71e42b47a51c5d27860fb967ab99997a98dc9c0328c3aeec5d10338f6ef"
+        }
+      },
+      "rule_hash": "8d9f09a0014d6ef88aa544a059f044f0611cad786fbf932dbd18bd6c6a9457f8"
+    }
+  }
+}

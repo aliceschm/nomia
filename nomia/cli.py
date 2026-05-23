@@ -7,7 +7,14 @@ from nomia.services.auditor import audit_untracked
 from nomia.services.checker import check
 from nomia.services.validator import validate
 
-app = typer.Typer(help="Nomia CLI")
+app = typer.Typer(
+    help="Track business rules in Python projects and detect drift between declared rules and implementations."
+)
+
+
+def _handle_cli_error(exc: Exception, code: int = 1) -> None:
+    typer.echo(f"Error: {exc}", err=True)
+    raise typer.Exit(code=code) from exc
 
 
 class CheckOutputFormat(str, Enum):
@@ -41,10 +48,16 @@ def main(
 
 @app.command(name="validate")
 def validate_cmd(ctx: typer.Context) -> None:
-    state = validate(
-        config_path=ctx.obj["config_path"],
-        verbose=ctx.obj["verbose"],
-    )
+    """
+    Validate Nomia rule tracking and refresh the local validation snapshot.
+    """
+    try:
+        state = validate(
+            config_path=ctx.obj["config_path"],
+            verbose=ctx.obj["verbose"],
+        )
+    except (FileNotFoundError, RuntimeError, ValueError) as exc:
+        _handle_cli_error(exc)
 
     rules = state.get("rules", {})
     rule_count = len(rules)
@@ -67,22 +80,42 @@ def check_cmd(
         "--format",
         help="Output format: default, compact, detailed, or json.",
     ),
+    strict: bool = typer.Option(
+        False,
+        "--strict",
+        help="Exit with code 1 when findings are found. Useful for CI.",
+    ),
 ) -> None:
-    issues = check(
-        config_path=ctx.obj["config_path"],
-        verbose=ctx.obj["verbose"],
-    )
+    """
+    Run repository checks and report findings.
+
+    By default, findings are informational and the command exits with code 0
+    when execution succeeds. Use --strict to fail when findings are found.
+    """
+    try:
+        issues = check(
+            config_path=ctx.obj["config_path"],
+            verbose=ctx.obj["verbose"],
+        )
+    except (FileNotFoundError, RuntimeError, ValueError) as exc:
+        _handle_cli_error(exc, code=2)
 
     typer.echo(render_check_output(issues, format_mode.value))
-    raise typer.Exit(code=1 if issues else 0)
+    raise typer.Exit(code=1 if strict and issues else 0)
 
 
 @app.command(name="audit")
 def audit_cmd(ctx: typer.Context) -> None:
-    functions = audit_untracked(
-        config_path=ctx.obj["config_path"],
-        verbose=ctx.obj["verbose"],
-    )
+    """
+    List discovered project functions that are not linked to a Nomia rule.
+    """
+    try:
+        functions = audit_untracked(
+            config_path=ctx.obj["config_path"],
+            verbose=ctx.obj["verbose"],
+        )
+    except (FileNotFoundError, RuntimeError, ValueError) as exc:
+        _handle_cli_error(exc)
 
     if not functions:
         typer.echo("No untracked functions found.")
