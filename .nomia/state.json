@@ -1,13 +1,29 @@
 {
   "schema_version": 1,
   "rules": {
-    "discount_eligibility": {
+    "high_risk_customers_require_manual_approval": {
       "functions": {
-        "example_app_db.app.validate_discount_eligibility": {
-          "code_hash": "a7e6a71e42b47a51c5d27860fb967ab99997a98dc9c0328c3aeec5d10338f6ef"
+        "example_app.app.requires_manual_approval": {
+          "code_hash": "6f672c546ac3dce71912bf9490a341f7ca5e793c8f4853245676edafabb02ef2"
         }
       },
-      "rule_hash": "8d9f09a0014d6ef88aa544a059f044f0611cad786fbf932dbd18bd6c6a9457f8"
+      "rule_hash": "1f6fafd04c2231e128b6a473495fa656aae2488826f16d452970669b043ffff7"
+    },
+    "orders_above_credit_limit_must_be_blocked": {
+      "functions": {
+        "example_app.app.can_approve_order": {
+          "code_hash": "b838cd65845a86355a47cf2a2ec22a1c8133a6b6a81035cb46e62a0f9a38dadb"
+        }
+      },
+      "rule_hash": "c2861065d44ed43e6c88c6ae43dbdb6fbe8b5d5e31c94c6aaaf2a991b018cab6"
+    },
+    "overdue_customers_cannot_receive_new_credit": {
+      "functions": {
+        "example_app.app.can_offer_new_credit": {
+          "code_hash": "b77058730271ae18de80421b26a6aed2b9f0e60eacc1925861b3a077c3b85ac0"
+        }
+      },
+      "rule_hash": "c4d6db45009916e17225917dc6a2992c49e2fbb7fe76b20c5288fd5e5ba1f02b"
     }
   }
 }

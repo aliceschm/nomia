@@ -2,6 +2,7 @@ from enum import Enum
 
 import typer
 
+from nomia.config import load_config
 from nomia.output import render_check_output
 from nomia.services.auditor import audit_untracked
 from nomia.services.checker import check
@@ -15,6 +16,12 @@ app = typer.Typer(
 def _handle_cli_error(exc: Exception, code: int = 1) -> None:
     typer.echo(f"Error: {exc}", err=True)
     raise typer.Exit(code=code) from exc
+
+
+def _tracked_rule_count(config_path: str | None) -> int:
+    config = load_config(config_path)
+    rules_by_id = {rule["id"]: rule for rule in config.get("rules", [])}
+    return len(rules_by_id)
 
 
 class CheckOutputFormat(str, Enum):
@@ -97,10 +104,13 @@ def check_cmd(
             config_path=ctx.obj["config_path"],
             verbose=ctx.obj["verbose"],
         )
+        tracked_rule_count = None
+        if not issues and format_mode == CheckOutputFormat.default:
+            tracked_rule_count = _tracked_rule_count(ctx.obj["config_path"])
     except (FileNotFoundError, RuntimeError, ValueError) as exc:
         _handle_cli_error(exc, code=2)
 
-    typer.echo(render_check_output(issues, format_mode.value))
+    typer.echo(render_check_output(issues, format_mode.value, tracked_rule_count))
     raise typer.Exit(code=1 if strict and issues else 0)
 
 
