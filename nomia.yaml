@@ -1,6 +1,23 @@
+# examples/credit-policy/rules/credit-policy.yaml
 sources:
-  - example_app_db
-
+  - example_app
 rules:
-  - id: discount_eligibility
-    description: Apenas clientes adimplentes podem receber desconto.
+  # 1. Minimal: only the required ID
+  - id: orders_above_credit_limit_must_be_blocked
+
+  # 2. Descriptive: ID + human-readable title
+  - id: high_risk_customers_require_manual_approval
+    title: High-risk customers require manual approval
+
+  # 3. Rich/domain-oriented: ID + title + description + metadata
+  - id: overdue_customers_cannot_receive_new_credit
+    title: Overdue customers cannot receive new credit
+    description: >
+      Customers with overdue invoices must not receive additional credit
+      until their overdue balance is resolved.
+    owner: finance_operations
+    severity: high
+    tags:
+      - credit
+      - collections
+      - approval
