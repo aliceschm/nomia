@@ -84,7 +84,11 @@ def format_human_issue(issue: dict, *, detailed: bool = False) -> str:
     return f"- {_issue_label(issue)}: {_issue_subject(issue, detailed=detailed)}"
 
 
-def render_check_output(issues: list[dict], format_mode: str = "default") -> str:
+def render_check_output(
+    issues: list[dict],
+    format_mode: str = "default",
+    tracked_rule_count: int | None = None,
+) -> str:
     if format_mode not in CHECK_OUTPUT_FORMATS:
         valid_formats = ", ".join(CHECK_OUTPUT_FORMATS)
         raise ValueError(
@@ -96,7 +100,7 @@ def render_check_output(issues: list[dict], format_mode: str = "default") -> str
         return render_check_json(issues)
 
     if not issues:
-        return render_check_success(format_mode)
+        return render_check_success(format_mode, tracked_rule_count)
 
     if format_mode == "compact":
         return render_check_compact(issues)
@@ -107,14 +111,22 @@ def render_check_output(issues: list[dict], format_mode: str = "default") -> str
     return render_check_default(issues)
 
 
-def render_check_success(format_mode: str = "default") -> str:
+def render_check_success(
+    format_mode: str = "default", tracked_rule_count: int | None = None
+) -> str:
     if format_mode == "compact":
         return "Alignment check passed"
 
     if format_mode == "detailed":
         return "Alignment check passed\n\nNo items require review."
 
-    return "Nomia is up to date."
+    return "\n".join(
+        [
+            "Nomia check completed.",
+            f"Tracked rules: {tracked_rule_count or 0}",
+            "No alignment issues found.",
+        ]
+    )
 
 
 def render_check_default(issues: list[dict]) -> str:
