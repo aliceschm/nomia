@@ -1,259 +1,208 @@
 # Nomia
 
-**Keep your business rules and code aligned. Continuously.**
+Nomia is a Python CLI for tracking alignment between business rules and code.
 
-Nomia is a Python CLI tool that helps you track, validate, and maintain the relationship between **business rules** and their **implementations in code**.
+It lets you declare business rules in `nomia.yaml`, link those rules to Python
+functions with a decorator, capture a validated alignment snapshot, and later
+check whether the repository has drifted from that snapshot.
 
-Instead of letting domain knowledge drift across PRs, refactors, and quick fixes, Nomia makes that relationship **explicit, versioned, and observable over time**.
+Nomia does not prove that code is semantically correct. It makes rule-code
+alignment explicit and reports when declared rules, linked implementations, or
+validated mappings have changed.
 
----
+## Core Workflow
 
-## Why Nomia exists
+Nomia has two main workflow commands:
 
-In most systems, business rules live in one of these places:
+- `nomia validate` captures or updates the validated alignment state after you
+  have reviewed and accepted the current rule-code associations.
+- `nomia check` checks the current repository against the validated state and
+  reports alignment issues.
 
-- someone's head  
-- a Jira ticket from 6 months ago  
-- scattered conditionals across the codebase  
-- outdated documentation  
+A typical workflow is:
 
-Meanwhile, modern development practices (CI/CD, linting, tests) continuously validate **technical correctness**, but not **business intent**.
-
-Nomia focuses on that missing layer:
-
-> Are we still implementing what the business actually meant?
-
----
-
-## What Nomia does
-
-Nomia introduces a simple workflow:
-
-1. **Declare business rules**
-2. **Link them to code**
-3. **Validate the alignment**
-4. **Detect changes over time**
-
-It doesn’t try to model your domain.
-It just makes the relationship between **intent** and **implementation** visible.
-
----
-
-## A quick example
-
-Define your rules:
-
-```yaml
-# nomia.yaml
-rules:
-  - id: discount.eligibility
-
-sources:
-  - my_app
+```bash
+nomia validate
 ```
 
-Link them in your code:
+Review and accept the current rule-code associations. Nomia writes the validated
+state to `.nomia/state.json`.
+
+Later, after code or rule changes:
+
+```bash
+nomia check
+```
+
+Nomia compares the current repository to the last validated state and reports
+anything that needs review. If there are no issues, the default output is:
+
+```text
+Nomia check completed.
+Tracked rules: 3
+No alignment issues found.
+```
+
+The tracked rule count is based on the configured rule IDs discovered from the
+current Nomia config.
+
+## Quick Example
+
+Declare rules and source packages in `nomia.yaml`:
+
+```yaml
+sources:
+  - my_app
+
+rules:
+  - id: discount.eligibility
+    description: Customer must be active and have no outstanding balance.
+```
+
+Link code to a rule:
 
 ```python
 from nomia import rule
+
 
 @rule("discount.eligibility")
 def is_customer_eligible(customer):
     return customer.is_active and customer.balance == 0
 ```
 
-Validate the current state:
+Capture the reviewed state:
 
 ```bash
 nomia validate
 ```
 
-Later, if the implementation changes:
-
-```python
-# new behavior introduced silently
-return customer.is_active and (
-    customer.balance == 0 or customer.has_payment_agreement
-)
-```
-
-Nomia will detect the drift:
+Check for changes later:
 
 ```bash
 nomia check
 ```
 
-Now you have a decision to make:
-
-- the rule changed → update the config
-- the code is wrong → fix the implementation
-
-Nomia also fingerprints the declared rule content. If fields such as
-`description`, `rationale`, `examples`, `severity`, `tags`, or other rule
-metadata change after validation, `nomia check` reports that the rule definition
-must be revalidated. This is content drift detection, not semantic proof that
-the code behavior still matches the business intent.
-
----
-
-## Core ideas
-
-Nomia is built around a few simple principles:
-
-### Business rules are explicit
-
-Rules are declared in a config file, not hidden in code.
-
-### Code is annotated, not inferred
-
-Developers explicitly link implementations using a decorator.
-
-### Alignment is versioned
-
-Nomia stores a snapshot of rule definitions, code fingerprints, and rule–code
-relationships, then compares that snapshot over time.
-
-### Drift is visible
-
-Implementation drift, rule definition drift, and mapping drift are detected,
-even when tests still pass.
-
----
-
-## Designed for real workflows
-
-Nomia fits naturally into modern development practices:
-
-- works with any Python project  
-- integrates with CI pipelines  
-- doesn’t require architectural changes  
-- doesn’t enforce full coverage  
-
-It only tracks what you decide is important.
-
----
+If the function body changes, the rule definition changes, a configured rule has
+no implementation, or a previously validated implementation is removed, `check`
+reports an alignment issue.
 
 ## Commands
 
-Nomia provides three main commands:
+Nomia provides three commands:
 
-### `validate`
+```bash
+nomia validate
+nomia check
+nomia audit
+```
 
-Creates a snapshot of current rule implementations.
+Global options:
+
+```bash
+nomia --config path/to/nomia.yaml check
+nomia --verbose check
+```
+
+`--config` selects a Nomia config file. `--verbose` shows detailed discovery and
+import output.
+
+## `nomia validate`
 
 ```bash
 nomia validate
 ```
 
-Use it when:
-- introducing new rules
-- updating rule mappings
-- accepting changes to a rule definition
-- accepting changes to an implementation
+Validates Nomia rule tracking and refreshes the local validation snapshot.
 
----
+Use `validate` after you have reviewed the current rule-code associations and
+want to accept them as the new baseline.
 
-### `check`
+On success, Nomia prints a compact summary:
 
-Compares current code with the last validated state.
+```text
+Validation snapshot created. Rules tracked: 3, functions tracked: 3
+```
+
+If a declared rule has no discovered implementation, validation fails and reports
+the missing implementation.
+
+## `nomia check`
 
 ```bash
 nomia check
 ```
 
-Use it in:
-- CI pipelines
-- pull requests
-- pre-merge checks
+Runs repository checks and reports findings.
 
-`check` reports:
+By default, findings are informational and the command exits with code `0` when
+execution succeeds. Use `--strict` to exit with code `1` when findings are found:
 
-- implementation drift when a linked function changes
-- rule definition drift when YAML rule content changes
-- mapping drift when rules or linked functions are added, removed, or missing
+```bash
+nomia check --strict
+```
 
----
+Available output formats:
 
-### `audit`
+```bash
+nomia check --format default
+nomia check --format compact
+nomia check --format detailed
+nomia check --format json
+```
 
-Lists functions that are not linked to any rule.
+`check` can report:
+
+- linked function code changed since the last validated snapshot
+- rule content changed since the last validated snapshot
+- a declared rule has no discovered implementation
+- a previously validated rule was removed from the config
+- a previously validated linked implementation was removed
+- a discovered rule-code association has not been validated yet
+
+## `nomia audit`
 
 ```bash
 nomia audit
 ```
 
-Useful for:
-- discovering missing rule mappings  
-- exploring your codebase  
+Lists discovered project functions that are not linked to a Nomia rule.
 
----
+If no untracked functions are found, Nomia prints:
 
-## What Nomia is not
+```text
+No untracked functions found.
+```
 
-Nomia is intentionally minimal.
+## Configuration
 
-It does **not**:
+Nomia looks for a config file such as `nomia.yaml`.
 
-- enforce domain modeling  
-- replace tests  
-- require full rule coverage  
-- infer business logic automatically  
+```yaml
+sources:
+  - my_app
 
-It gives you visibility, not control.
+rules:
+  - id: orders_above_credit_limit_must_be_blocked
+  - id: high_risk_customers_require_manual_approval
+    title: High-risk customers require manual approval
+    severity: high
+```
 
----
+`sources` tells Nomia where to discover Python functions. `rules` declares the
+business rule IDs that should be tracked.
 
-## When to use it
+## What Nomia Is Not
 
-Nomia is especially useful when:
+Nomia does not:
 
-- business rules change frequently  
-- multiple developers touch the same logic  
-- domain knowledge is critical (finance, billing, workflows)  
-- you want to bring business awareness into code reviews  
+- infer business rules automatically
+- replace tests
+- require full rule coverage
+- enforce a domain model
+- prove that implementation behavior matches business intent
 
----
-
-## Philosophy
-
-Nomia is based on a simple idea:
-
-> If code evolves continuously, business rules should be tracked continuously too.
-
-It treats **rule alignment** as a first-class concern in the development lifecycle, just like tests, linting, and security checks.
-
----
-
-## Status
-
-Nomia is currently an MVP.
-
-It already supports:
-
-- rule declaration via YAML
-- decorator-based linking
-- deterministic code discovery
-- fingerprint-based implementation and rule definition change detection
-- CI-friendly validation
-
----
-
-## Documentation
-
-Full documentation is coming soon.
-
-This repository focuses on:
-- the core concept  
-- the CLI workflow  
-- the alignment model  
-
----
-
-## Summary
-
-Nomia helps you answer a question most systems ignore:
-
-> Does our code still reflect what the business intended?
+It gives you a lightweight way to notice when accepted rule-code alignment has
+changed and needs review.
 
 ## License
 
