@@ -34,6 +34,13 @@ def _stub_check(monkeypatch, issues):
     monkeypatch.setattr(nomia.cli, "check", fake_check)
 
 
+def _stub_tracked_rule_count(monkeypatch, tracked_rule_count=13):
+    def fake_tracked_rule_count(config_path=None):
+        return tracked_rule_count
+
+    monkeypatch.setattr(nomia.cli, "_tracked_rule_count", fake_tracked_rule_count)
+
+
 def test_check_default_format_failed_alignment(monkeypatch):
     _stub_check(monkeypatch, FAILED_ISSUES)
 
@@ -121,20 +128,30 @@ def test_check_strict_outputs_same_findings_as_default(monkeypatch):
 
 def test_check_successful_alignment_default_format(monkeypatch):
     _stub_check(monkeypatch, [])
+    _stub_tracked_rule_count(monkeypatch)
 
     result = runner.invoke(app, ["check"])
 
     assert result.exit_code == 0
-    assert result.output == "Nomia is up to date.\n"
+    assert result.output == (
+        "Nomia check completed.\n"
+        "Tracked rules: 13\n"
+        "No alignment issues found.\n"
+    )
 
 
 def test_check_strict_successful_alignment_exits_zero(monkeypatch):
     _stub_check(monkeypatch, [])
+    _stub_tracked_rule_count(monkeypatch)
 
     result = runner.invoke(app, ["check", "--strict"])
 
     assert result.exit_code == 0
-    assert result.output == "Nomia is up to date.\n"
+    assert result.output == (
+        "Nomia check completed.\n"
+        "Tracked rules: 13\n"
+        "No alignment issues found.\n"
+    )
 
 
 def test_check_successful_alignment_json_format(monkeypatch):
